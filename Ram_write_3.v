@@ -17,7 +17,7 @@ always @(posedge clk) begin
             accum1<=in1;
             counter<=1;
             if(init==1) begin
-                ram_write_data<=accum3;
+                ram_write_data<=accum3; //needs to be changed accordind to the input matrix
             end
 
         end
