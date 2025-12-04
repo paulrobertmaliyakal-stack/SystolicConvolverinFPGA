@@ -4,6 +4,7 @@ module RamWrite(
     input [7:0] out1,
     input [7:0] out2,
     input [7:0] out3,
+    input enable,
     output reg [7:0] ram_write_data,
     output reg [1:0] ram_enable_out,
     input clk

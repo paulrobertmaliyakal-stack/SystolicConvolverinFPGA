@@ -1,22 +1,15 @@
-module RamRead(input [7:0] data_in,input clk,output reg [7:0] data_out1,data_out2,data_out3,output reg [4:0] addr);
-reg [4:0] addr_temp;
+module RamRead(input [7:0] data_in,input clk,output reg [7:0] data_out1,data_out2,data_out3,output reg [4:0] addr,ouput reg enable_out);
+
 reg [2:0] counter_x ;
 reg [1:0] counter_y ;
 reg enable;
 reg first_read,first_read1;
 reg init;
-reg data_in1,data_in2,data_in3;
 reg [7:0] temp;
-reg [7:0] linebuffer1[4:0];
 reg [7:0] linebuffer2[4:0];
 reg [7:0] linebuffer3[4:0];
 integer i;
 initial begin
-    linebuffer1[0]=0;
-    linebuffer1[1]=0;
-    linebuffer1[2]=0;
-    linebuffer1[3]=0;
-    linebuffer1[4]=0;
     linebuffer2[0]=0;
     linebuffer2[1]=0;
     linebuffer2[2]=0;
@@ -63,6 +56,7 @@ else begin
         2'b10:begin
             enable<=1;
             data_out3<=data_in;
+            enable_out=1;
             counter_y=0;
             counter_x<=counter_x+1;
             if(counter_x==4) begin
@@ -79,29 +73,27 @@ else begin
         data_out3<=data_in;
         data_out2<=linebuffer3[3];
         data_out1<=linebuffer2[3];
+        enable_out<=1;
     end
 
 end
 end
-always @(posedge clk)begin
+always @(posedge clk)begin //for line buffers
     if(enable==1) begin
         
         temp=linebuffer3[4];
         for(i=1;i<5;i=i+1) begin
-            linebuffer1[i]<=linebuffer1[i-1];
             linebuffer2[i]<=linebuffer2[i-1];
             linebuffer3[i]<=linebuffer3[i-1];
 
         end
         if(init==1)begin
         enable<=0;   
-        linebuffer1[0]<=data_out1;
         linebuffer2[0]<=data_out2;
         linebuffer3[0]<=data_out3;
         end
         else if(init==0 && first_read1==0)begin
             first_read1<=1;
-        linebuffer1[0]<=data_out1;
         linebuffer2[0]<=data_out2;
         linebuffer3[0]<=data_out3;
         end            
@@ -109,6 +101,12 @@ always @(posedge clk)begin
             linebuffer2[0]<=temp;
             linebuffer3[0]<=data_out3;
         end
+    end
+end
+
+always @(posedge clk) begin
+    if(enable_out=1)begin
+        enable_out<=0;
     end
 end
    
