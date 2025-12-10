@@ -1,13 +1,13 @@
 module RamRead(input [7:0] data_in,input clk,output reg [7:0] data_out1,data_out2,data_out3,output reg [4:0] addr,ouput reg enable_out);
 
-reg [2:0] counter_x ;
+reg [5:0] counter_x ;
 reg [1:0] counter_y ;
 reg enable;
 reg first_read,first_read1;
 reg init;
 reg [7:0] temp;
-reg [7:0] linebuffer2[4:0];
-reg [7:0] linebuffer3[4:0];
+reg [7:0] linebuffer2[63:0];
+reg [7:0] linebuffer3[63:0];
 integer i;
 initial begin
     linebuffer2[0]=0;
@@ -33,7 +33,7 @@ end
 always @(posedge clk) begin
 if(first_read==0) begin
 first_read<=1;
-addr<=counter_x+5;
+addr<=counter_x+8;//number pf elements in a row
 end
 else begin
     if(init==1) begin
@@ -41,16 +41,16 @@ else begin
         2'b00:
         begin
             data_out1<=data_in;
-            addr<=counter_x+5*2;
+            addr<=counter_x+8*2;
             counter_y<=1;
         end
 
         2'b01:begin
             data_out2<=data_in;
-            if(counter_x!=4)begin
+            if(counter_x!=63)begin
             addr<=counter_x+1;
             end
-            else addr<=5*3;//number of elements in a row * 3
+            else addr<=8*3;//number of elements in a row * 3
             counter_y<=2;
         end
         2'b10:begin
@@ -59,11 +59,11 @@ else begin
             enable_out=1;
             counter_y=0;
             counter_x<=counter_x+1;
-            if(counter_x==4) begin
+            if(counter_x==63) begin
             init<=0;
             addr<=addr+1;
             end
-            else addr<=counter_x+1+5;
+            else addr<=counter_x+1+8;
         end
         endcase
     end
@@ -105,7 +105,7 @@ always @(posedge clk)begin //for line buffers
 end
 
 always @(posedge clk) begin
-    if(enable_out=1)begin
+    if(enable_out=1 && init==1)begin
         enable_out<=0;
     end
 end
