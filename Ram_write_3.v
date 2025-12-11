@@ -20,13 +20,14 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module ram_write(input [7:0] in1,in2,in3 ,input enable,clk,output reg ram_write_enable,output reg [5:0] ram_addr,output reg [7:0] ram_write_data);
-reg [9:0] accum1,accum2,accum3;
-reg [2:0] counter;
+module ram_write(input signed [16:0] in1,in2,in3 ,input enable,clk,output reg [11:0] ram_addr,output reg signed [7:0] ram_write_data);
+reg signed [16:0] accum1,accum2,accum3;
+reg [5:0] counter; //2^n<=rowlength
 reg [1:0] counter1,counter2,counter3;
 reg init;
 reg done;
-parameter rowlength=8;
+parameter rowlength=64;
+parameter kernelsum=45;
 initial begin
     done=0;
     ram_addr=0;
@@ -43,7 +44,9 @@ always @(posedge clk) begin
             accum1<=in1;
             counter<=1;
             if(init==1) begin
-                ram_write_data<=(accum3>255)?8'd255:accum3; //needs to be changed accordind to the input matrix(counter number=(rowlength-2)%3+1)
+                if(accum2<0) ram_write_data<=0;
+                ram_write_data<=((accum2/kernelsum)>255)?8'd255:(accum2/kernelsum); //temp=(rowlength-2)%3) ; if temp=0 counternum=3,temp=1 counternum=1 else counternum=2
+                ram_write_data<=accum3;
                 ram_addr<=ram_addr+1;
             end
 
@@ -63,7 +66,8 @@ always @(posedge clk) begin
         default begin
             case (counter1)
             2'd0:begin
-                ram_write_data<=(accum1>255)?8'd255:accum1;
+                if(accum1<0) ram_write_data<=0;
+                else ram_write_data<=((accum1/kernelsum)>255)?8'd255:(accum1/kernelsum);
                 ram_addr<=ram_addr+1;
                 accum1<=in1;
                 counter1<=1;
@@ -80,7 +84,8 @@ always @(posedge clk) begin
 
             case (counter2)
             2'd0:begin
-                ram_write_data<=(accum2>255)?8'd255:accum2;
+                if(accum2<0) ram_write_data<=0;
+                else ram_write_data<=(accum2/kernelsum>255)?8'd255:accum2/kernelsum;
                 ram_addr<=ram_addr+1;
                 accum2<=in1;
             end
@@ -94,7 +99,8 @@ always @(posedge clk) begin
 
             case (counter3)
             2'd0:begin
-                ram_write_data<=(accum3>255)?8'd255:accum3;
+                if(accum3<0) ram_write_data<=0;
+                else ram_write_data<=(accum3/kernelsum>255)?8'd255:accum3/kernelsum;;
                 ram_addr<=ram_addr+1;
                 accum3<=in1;
             end
