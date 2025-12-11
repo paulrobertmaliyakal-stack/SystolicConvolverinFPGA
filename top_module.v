@@ -1,6 +1,7 @@
 module top_module(input clk);
 wire [7:0] data_ram,data_out1,data_out2,data_out3,data_out_pe1,data_out_pe2,data_out_pe3;
-wire [4:0] addr,ram_write_addr;
+wire [5:0] ram_write_addr;
+wire [5:0] addr;
 wire enable_out,ram_write_enable;
 wire [11:0] ram_write_data;
 RamRead inst1( .data_in(data_ram),.clk(clk),.data_out1(data_out1),.data_out2(data_out2),.data_out3(data_out3),.addr(addr),.enable_out(enable_out));

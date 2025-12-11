@@ -1,3 +1,4 @@
+
 module PE(input [7:0] in1,in2,in3,output [7:0] out1,out2,out3);
 reg [7:0] kernel [8:0];
 reg [15:0] temp_out1,temp_out2,temp_out3;
