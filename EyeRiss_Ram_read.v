@@ -21,16 +21,17 @@
 
 module RamRead(input [7:0] data_in,input clk,output reg [7:0] data_out1,data_out2,data_out3,output reg [11:0] addr,output reg enable_out);
 
-reg [5:0] counter_x ; //2^n = rowlength
-reg [1:0] counter_y ;
+reg [5:0] counter_x ; //2^n >= rowlength (no of rows)
+reg [1:0] counter_y ;//2^n >= rowlength of kernel
 reg enable;
 reg first_read,first_read1;
 reg init;
 reg [7:0] temp;
+parameter rowlength=64; 
 reg [7:0] linebuffer2[rowlength-1:0];
 reg [7:0] linebuffer3[rowlength-1:0];
 integer i;
-parameter rowlength=64;
+
 initial begin
 //    linebuffer2[0]=0;
 //    linebuffer2[1]=0;

@@ -27,7 +27,7 @@ reg [1:0] counter1,counter2,counter3;
 reg init;
 reg done;
 parameter rowlength=64;
-parameter kernelsum=45;
+parameter kernelsum=16;
 initial begin
     done=0;
     ram_addr=0;
@@ -46,7 +46,7 @@ always @(posedge clk) begin
             if(init==1) begin
                 if(accum2<0) ram_write_data<=0;
                 ram_write_data<=((accum2/kernelsum)>255)?8'd255:(accum2/kernelsum); //temp=(rowlength-2)%3) ; if temp=0 counternum=3,temp=1 counternum=1 else counternum=2
-                ram_write_data<=accum3;
+                //ram_write_data<=accum3; 
                 ram_addr<=ram_addr+1;
             end
 
@@ -100,7 +100,7 @@ always @(posedge clk) begin
             case (counter3)
             2'd0:begin
                 if(accum3<0) ram_write_data<=0;
-                else ram_write_data<=(accum3/kernelsum>255)?8'd255:accum3/kernelsum;;
+                else ram_write_data<=(accum3/kernelsum>255)?8'd255:accum3/kernelsum;
                 ram_addr<=ram_addr+1;
                 accum3<=in1;
             end
@@ -151,7 +151,9 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-if(ram_addr==(rowlength-2)*(rowlength-2)-1)  done<=1;
+if(ram_addr==(rowlength-2)*(rowlength-2)-1)begin
+  done<=1;
+  end
  
  
 if(init==1) begin
