@@ -31,7 +31,7 @@ output reg [7:0] result,
 output reg busy,
 output reg en_out
     );
-    parameter output_rowlength=6;
+    parameter output_rowlength=14;
     reg [8:0] rowcount;
     reg [16:0] accum1;
     reg [16:0] accum2;
@@ -57,6 +57,7 @@ output reg en_out
     1: begin
     if(rst==1) state<=0;
     else if(w_en==1) begin
+    en_out<=0;
     accum2<=data_1;
     accum1<=accum1+data_2;
     counter_1<=2;
@@ -68,7 +69,15 @@ output reg en_out
     2: begin 
     if(rst==1) state<=0;
     else if(w_en==1) begin
-    if(rowcount==output_rowlength-1) state<=0;
+    if(rowcount==output_rowlength-1)begin
+    rowcount<=0;
+     state<=1;
+     accum1<=data_1;
+     if(counter_1==0)result<=accum1;
+     else if(counter_2==0) result<=accum2;
+     else result<=accum3;
+     end
+     else begin
     case (counter_1) 
     0: begin
     accum1<=data_1;
@@ -124,9 +133,8 @@ output reg en_out
     endcase
     end
     end
-    endcase
     end
-    always@(posedge clk) begin
-    if( en_out==1) en_out<=0;
+    endcase
+    if( en_out==1 && w_en==0) en_out<=0;
     end
 endmodule
