@@ -20,74 +20,51 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module uart_con #(parameter DATA_WIDTH = 8,
-                  parameter INDEX = 8)
-(
-    input clk,rst,
-    input [INDEX-1:0] idx,
-    input [DATA_WIDTH-1:0] data_in,
-    input tx_done,
-    output reg [INDEX-1:0] cnt,
-    output reg enable,
-    output reg tx_start,
-    output reg [DATA_WIDTH-1:0] out
+module uart_con (
+input rst ,
+input clk,
+input tx_done,
+input [7:0] data_in,
+input [15:0] addr_in,
+output reg en_out_mem,
+output reg [15:0] addr_out,
+output reg tx_en
 );
-
-// reg [INDEX-1:0] cnt;
-reg [INDEX-1:0] diff;
-reg [1:0] state;
-
-localparam [1:0] IDLE = 2'b00, LOAD = 2'b01, WAIT = 2'b10, DONE = 2'b11;
-
-always@(*)begin
-    diff = idx - cnt;
+reg [2:0] state;
+initial begin 
+state=0;
+addr_out<=0;
+en_out_mem<=0;
+end
+always @(posedge clk) begin
+case(state)
+0:begin // rst state
+addr_out<=0;
+if(rst==0 && addr_in!=0) state<=1;
+end
+1: begin // fetch data at addr_out
+en_out_mem<=1;
+state<=4;
+end
+4 : begin
+state<=2;
+end
+2:begin
+en_out_mem<=0;
+if(tx_done==1)begin
+tx_en<=1;
+addr_out<=addr_out+1;
+state<=3;
 end
 
-always@(posedge clk)begin
-    if(rst)begin
-        out <= 0;
-        cnt <= 0;
-        // diff <= 0;
-        tx_start <= 0;
-        enable <= 0;
-        state <= IDLE;
-    end
-    else begin
-
-        tx_start <= 0;
-        enable <= 0;
-
-        case(state)
-        IDLE:begin
-            if(idx > 0)begin
-                state <= LOAD;
-                enable <= 1'b1;
-                cnt <= cnt + 1;
-            end
-            state <= IDLE;
-        end
-        LOAD:begin
-            enable <= 0;
-            tx_start <= 1;
-            out <= data_in;
-            state <= WAIT;
-        end
-        WAIT:begin
-            if(diff == 0)begin
-                state <= DONE;
-            end
-            if(tx_done)begin
-                state <= LOAD;
-                enable <= 1'b1;
-                cnt <= cnt + 1;
-            end
-        end
-        DONE: begin
-            state <= DONE;
-        end
-        default: state <= IDLE;
-        endcase
-    end
+end
+3: begin //normal operation
+tx_en<=0;
+if(addr_out<addr_in)begin
+state<=1;
+end
+end
+endcase
 end
 endmodule
 

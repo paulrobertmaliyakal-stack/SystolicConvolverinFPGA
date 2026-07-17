@@ -31,6 +31,7 @@ output reg [7:0] result,
 output reg busy,
 output reg en_out
     );
+    reg done;
     parameter output_rowlength=14;
     reg [8:0] rowcount;
     reg [16:0] accum1;
@@ -40,18 +41,26 @@ output reg en_out
     reg [1:0] counter_2;
     reg [1:0] counter_3;
     reg [1:0] state;
+    reg [10:0] rowsdone;
     initial begin 
     state=0;
     busy=0;
     en_out=0;
+    rowsdone=0;
+    done=0;
     end
     always @(posedge clk) begin
+    if(done==1) begin
+    en_out<=0;
+    end
+    else  begin
     case (state)
     0: begin  //rst state
     if(w_en==1 && rst==0) begin
     accum1<=data_1;
     state<=1;
     rowcount<=0;
+    rowsdone<=0;
     end
     end
     1: begin
@@ -71,6 +80,7 @@ output reg en_out
     else if(w_en==1) begin
     if(rowcount==output_rowlength-1)begin
     rowcount<=0;
+    rowsdone<=rowsdone+1;
      state<=1;
      accum1<=data_1;
      if(counter_1==0)result<=accum1;
@@ -137,4 +147,13 @@ output reg en_out
     endcase
     if( en_out==1 && w_en==0) en_out<=0;
     end
+    end
+    
+    always @(*) begin
+    if(rowsdone==output_rowlength && rst==0) begin
+    done=1;
+    end
+    else if(rst==1) done=0;
+    end
+
 endmodule
